@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validateur d'Emails Universitaire</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Open Sans', sans-serif; background-color: #f5f5f5; color: #2a2a2a; line-height: 1.6; }
+        .header {
+            background-color: #0a2a5e;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { margin: 0; flex-grow: 1; }
+        .logout-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .logout-btn:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+        }
+        .container { max-width: 1200px; margin: 20px auto; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); }
+        .search-section { margin-bottom: 20px; text-align: center; }
+        #searchInput { padding: 12px; font-size: 16px; border: 1px solid #d3d3d3; border-radius: 6px; width: 300px; transition: all 0.3s ease; }
+        #searchInput:focus { border-color: #4682b4; box-shadow: 0 0 8px rgba(70, 130, 180, 0.3); outline: none; }
+        .form-section { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
+        .input-group { display: flex; gap: 10px; align-items: center; }
+        input[type="file"], input[type="email"] { padding: 12px; font-size: 16px; border: 1px solid #d3d3d3; border-radius: 6px; width: 300px; transition: all 0.3s ease; }
+        input[type="file"]:focus, input[type="email"]:focus { border-color: #4682b4; box-shadow: 0 0 8px rgba(70, 130, 180, 0.3); outline: none; }
+        button { padding: 12px 30px; font-size: 16px; background-color: #4682b4; color: white; border: none; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; }
+        button:hover { background-color: #356ea8; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(70, 130, 180, 0.3); }
+        #result { text-align: center; margin-top: 15px; font-weight: 600; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .valid { color: #27ae60; }
+        .invalid, .obsolete { color: #e74c3c; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 5px; margin-top: 10px; }
+        th, td { padding: 14px; text-align: left; background: white; }
+        th { background-color: #add8e6; color: #2a2a2a; border-radius: 6px 6px 0 0; }
+        tr { box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); border-radius: 6px; transition: transform 0.2s ease; }
+        tr:hover { transform: scale(1.01); background: #f0f8ff; }
+        .delete-btn, .update-btn, .verify-btn, .batch-verify-btn { padding: 8px 15px; border: none; border-radius: 4px; color: white; cursor: pointer; transition: all 0.3s ease; }
+        .delete-btn { background-color: #e74c3c; }
+        .delete-btn:hover { background-color: #c0392b; }
+        .update-btn { background-color: #4682b4; margin-right: 5px; }
+        .update-btn:hover { background-color: #356ea8; }
+        .verify-btn { background-color: #27ae60; margin-left: 5px; }
+        .verify-btn:hover { background-color: #219653; }
+        .batch-verify-btn { background-color: #f39c12; margin-right: 10px; }
+        .batch-verify-btn:hover { background-color: #e67e22; }
+        .action-section { text-align: center; padding-top: 20px; border-top: 1px solid #d3d3d3; }
+        .pagination { margin-top: 20px; text-align: center; }
+        .page-info { text-align: center; margin-top: 10px; font-style: italic; color: #666; }
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 10px; }
+            .input-group { flex-direction: column; width: 100%; }
+            input[type="file"], input[type="email"], #searchInput { width: 100%; }
+        }
+        .confirmation {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #27ae60;
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-valide { background-color: #e8f5e9; color: #2e7d32; }
+        .status-erronée { background-color: #ffebee; color: #c62828; }
+        .status-obsolète { background-color: #fff3e0; color: #ef6c00; }
+        .user-info {
+            color: white;
+            margin-right: 15px;
+            font-size: 14px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .stats-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .stats-item {
+            display: inline-block;
+            margin: 0 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .stats-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0a2a5e;
+        }
+        .refresh-btn {
+            background-color: #3498db;
+            margin-right: 10px;
+        }
+        .refresh-btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>Validateur d'Emails Universitaire</h1>
+    <div>
+        <span class="user-info" id="userInfo">Connecté en tant que: </span>
+        <button class="logout-btn" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="stats-section" id="statsSection">
+        <div class="stats-item">
+            <div>Total</div>
+            <div class="stats-value" id="totalStats">0</div>
+        </div>
+        <div class="stats-item">
+            <div>Valides</div>
+            <div class="stats-value" id="valideStats">0</div>
+        </div>
+        <div class="stats-item">
+            <div>Erronées</div>
+            <div class="stats-value" id="erreurStats">0</div>
+        </div>
+        <div class="stats-item">
+            <div>Obsolètes</div>
+            <div class="stats-value" id="obsoleteStats">0</div>
+        </div>
+    </div>
+
+    <div class="search-section">
+        <input type="text" id="searchInput" placeholder="Rechercher par email ou statut..." oninput="searchEmails()">
+    </div>
+
+    <div class="form-section">
+        <div class="input-group">
+            <input type="file" id="csvFile" accept=".csv">
+            <button onclick="loadCSV()">Charger CSV <i class="fas fa-upload"></i></button>
+        </div>
+
+        <div class="input-group">
+            <input type="email" id="manualEmail" placeholder="Entrer un email">
+            <button onclick="addManualEmail()">Ajouter <i class="fas fa-plus"></i></button>
+        </div>
+
+        <div class="input-group" id="editGroup" style="display: none;">
+            <input type="email" id="editEmail" placeholder="Modifier l'email">
+            <button onclick="updateEmail()">Sauvegarder <i class="fas fa-save"></i></button>
+            <button onclick="cancelEdit()">Annuler <i class="fas fa-times"></i></button>
+        </div>
+    </div>
+
+    <div id="result"></div>
+
+    <div class="table-section">
+        <table id="emailTable">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Statut</th>
+                <th>Actif</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="emailTableBody"></tbody>
+        </table>
+        <div class="page-info" id="pageInfo"></div>
+    </div>
+
+    <div class="action-section">
+        <button onclick="loadFromBackend()" class="refresh-btn">
+            <i class="fas fa-sync-alt"></i> Actualiser
+        </button>
+        <button onclick="verifyAllEmails()" class="batch-verify-btn">
+            <i class="fas fa-check-double"></i> Vérifier Tous
+        </button>
+        <button onclick="downloadCleanedCSV()">
+            <i class="fas fa-file-csv"></i> Télécharger CSV
+        </button>
+        <button onclick="downloadCleanedPDF()">
+            <i class="fas fa-file-pdf"></i> Télécharger PDF
+        </button>
+        <div class="pagination">
+            <button onclick="prevPage()">
+                <i class="fas fa-chevron-left"></i> Précédent
+            </button>
+            <button onclick="nextPage()">
+                Suivant <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="confirmation" class="confirmation"></div>
+</div>
+
+<script>
+    // Vérifier l'authentification au chargement
+    if (!localStorage.getItem('isAuthenticated')) {
+        window.location.href = 'login.html?auth=true';
+    }
+
+    let emails = [];
+    let originalEmails = [];
+    let editIndex = -1;
+    let currentPage = 1;
+    const rowsPerPage = 10;
+
+    // Afficher le nom d'utilisateur
+    document.getElementById('userInfo').textContent += localStorage.getItem('username') || 'Administrateur';
+
+    function logout() {
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('username');
+        window.location.href = 'login.html?logout=true';
+    }
+
+    function loadCSV() {
+        const fileInput = document.getElementById("csvFile");
+        const file = fileInput.files[0];
+        if (!file) {
+            showResult("Veuillez sélectionner un fichier CSV", "invalid");
+            return;
+        }
+        if (!file.name.endsWith('.csv')) {
+            showResult("Le fichier doit être au format CSV", "invalid");
+            return;
+        }
+        const formData = new FormData();
+        formData.append("file", file);
+
+        showResult("Traitement du CSV en cours... <span class='loading'></span>", "valid");
+
+        apiCall('/emails/upload-csv', { method: 'POST', body: formData })
+            .then(savedEmails => {
+                if (!Array.isArray(savedEmails)) {
+                    showResult("Erreur: Format de réponse invalide du serveur", "invalid");
+                    return;
+                }
+
+                // Mettre à jour l'état local avec les nouveaux emails
+                originalEmails = savedEmails;
+                emails = [...originalEmails];
+                updateTable();
+                updateStats();
+                showResult("CSV chargé avec succès: " + savedEmails.length + " emails ajoutés", "valid");
+            })
+            .catch(error => {
+                console.error("CSV upload error:", error);
+                showResult("Erreur lors de l'upload: " + error.message, "invalid");
+            });
+    }
+
+    function addManualEmail() {
+        const emailInput = document.getElementById("manualEmail");
+        const email = emailInput.value.trim();
+        if (!email) {
+            showResult("Veuillez entrer un email", "invalid");
+            return;
+        }
+
+        showResult("Ajout de l'email en cours... <span class='loading'></span>", "valid");
+
+        setTimeout(() => {
+            const newEmail = {
+                id: originalEmails.length + 1,
+                address: email,
+                status: "valide",
+                isActive: true
+            };
+
+            originalEmails.push(newEmail);
+            emails.push(newEmail);
+            updateTable();
+            updateStats();
+            showResult("Email ajouté avec succès", "valid");
+            emailInput.value = "";
+        }, 1000);
+    }
+
+    function updateTable() {
+        const tbody = document.getElementById("emailTableBody");
+        tbody.innerHTML = "";
+
+        if (emails.length === 0) {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+            <td colspan="5" style="text-align: center; padding: 20px; color: #666;">
+                <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 10px;"></i>
+                <br>
+                Aucun email à afficher. Veuillez importer un fichier CSV ou ajouter des emails manuellement.
+            </td>
+        `;
+            tbody.appendChild(row);
+            updatePaginationInfo();
+            return;
+        }
+
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const pageEmails = emails.slice(start, end);
+
+        pageEmails.forEach((email, index) => {
+            const row = document.createElement("tr");
+            const statusText = email.status === 'valide' ? 'Valide' :
+                email.status === 'erronée' ? 'Erronée' :
+                    email.status === 'obsolète' ? 'Obsolète' : email.status;
+
+            row.innerHTML = `
+            <td>${email.id || 'N/A'}</td>
+            <td>${email.address || 'Non défini'}</td>
+            <td><span class="status-badge status-${email.status || 'valide'}">${statusText}</span></td>
+            <td>${email.isActive ? 'Oui' : 'Non'}</td>
+            <td>
+                <button class="update-btn" onclick="editEmail(${start + index})"><i class="fas fa-edit"></i> Modifier</button>
+                <button class="delete-btn" onclick="deleteEmail(${start + index})"><i class="fas fa-trash"></i> Supprimer</button>
+                <button class="verify-btn" onclick="verifyEmail(${start + index})"><i class="fas fa-check"></i> Vérifier</button>
+            </td>
+        `;
+            tbody.appendChild(row);
+        });
+
+        updatePaginationInfo();
+    }
+
+    function updatePaginationInfo() {
+        const totalPages = Math.ceil(emails.length / rowsPerPage);
+        const pageInfo = document.getElementById("pageInfo");
+        if (totalPages > 0) {
+            pageInfo.textContent = `Page ${currentPage} sur ${totalPages} - ${emails.length} emails au total`;
+        } else {
+            pageInfo.textContent = "Aucun email à afficher";
+        }
+    }
+
+    function updateStats() {
+        const total = originalEmails.length;
+        const valide = originalEmails.filter(e => e.status === 'valide').length;
+        const erronee = originalEmails.filter(e => e.status === 'erronée').length;
+        const obsolete = originalEmails.filter(e => e.status === 'obsolète').length;
+
+        document.getElementById('totalStats').textContent = total;
+        document.getElementById('valideStats').textContent = valide;
+        document.getElementById('erreurStats').textContent = erronee;
+        document.getElementById('obsoleteStats').textContent = obsolete;
+    }
+
+    function deleteEmail(index) {
+        const email = emails[index];
+        if (!email.id) {
+            showResult("Impossible de supprimer: ID manquant", "invalid");
+            return;
+        }
+        if (confirm(`Êtes-vous sûr de vouloir supprimer l'email: ${email.address}?`)) {
+            showResult("Suppression en cours... <span class='loading'></span>", "valid");
+
+            setTimeout(() => {
+                emails.splice(index, 1);
+                originalEmails = originalEmails.filter(e => e.id !== email.id);
+                updateTable();
+                updateStats();
+                showResult("Email supprimé avec succès", "valid");
+            }, 1000);
+        }
+    }
+
+    function editEmail(index) {
+        editIndex = index;
+        document.getElementById("editEmail").value = emails[index].address;
+        document.getElementById("editGroup").style.display = "flex";
+        document.getElementById("manualEmail").style.display = "none";
+    }
+
+    function cancelEdit() {
+        editIndex = -1;
+        document.getElementById("editEmail").value = "";
+        document.getElementById("editGroup").style.display = "none";
+        document.getElementById("manualEmail").style.display = "inline";
+    }
+
+    function updateEmail() {
+        if (editIndex === -1) return;
+        const newEmail = document.getElementById("editEmail").value.trim();
+        if (!newEmail) {
+            showResult("Veuillez entrer un email valide", "invalid");
+            return;
+        }
+
+        showResult("Mise à jour en cours... <span class='loading'></span>", "valid");
+
+        setTimeout(() => {
+            const updatedEmail = {
+                ...emails[editIndex],
+                address: newEmail
+            };
+
+            emails[editIndex] = updatedEmail;
+            originalEmails = originalEmails.map(e => e.id === updatedEmail.id ? updatedEmail : e);
+            updateTable();
+            updateStats();
+            cancelEdit();
+            showResult("Email modifié avec succès", "valid");
+        }, 1000);
+    }
+
+    function showResult(message, status) {
+        const result = document.getElementById("result");
+        result.innerHTML = message;
+        result.className = status;
+        setTimeout(() => { result.innerHTML = ''; }, 3000);
+    }
+
+    function searchEmails() {
+        const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+        if (searchTerm === "") {
+            emails = [...originalEmails];
+        } else {
+            emails = originalEmails.filter(e =>
+                e.address.toLowerCase().includes(searchTerm) ||
+                (e.status && e.status.toLowerCase().includes(searchTerm))
+            );
+        }
+        currentPage = 1;
+        updateTable();
+    }
+
+    function verifyEmail(index) {
+        const email = emails[index];
+        if (!email.id) {
+            showResult("Impossible de vérifier: ID manquant", "invalid");
+            return;
+        }
+        showResult("Vérification en cours... <span class='loading'></span>", "valid");
+
+        setTimeout(() => {
+            const statuses = ["valide", "erronée", "obsolète"];
+            const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+
+            const updatedEmail = {
+                ...email,
+                status: randomStatus
+            };
+
+            emails[index] = updatedEmail;
+            originalEmails = originalEmails.map(e => e.id === updatedEmail.id ? updatedEmail : e);
+            updateTable();
+            updateStats();
+
+            showResult(
+                `Email ${randomStatus === "valide" ? "valide" : randomStatus === "erronée" ? "erroné" : "obsolète"}`,
+                randomStatus === "valide" ? "valid" : "invalid"
+            );
+        }, 1500);
+    }
+
+    function verifyAllEmails() {
+        if (originalEmails.length === 0) {
+            showResult("Aucun email à vérifier", "invalid");
+            return;
+        }
+
+        if (confirm(`Vérifier ${originalEmails.length} email(s)?`)) {
+            showResult("Vérification de tous les emails en cours... <span class='loading'></span>", "valid");
+
+            setTimeout(() => {
+                const statuses = ["valide", "erronée", "obsolète"];
+
+                emails = emails.map(email => {
+                    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+                    return {
+                        ...email,
+                        status: randomStatus
+                    };
+                });
+
+                originalEmails = [...emails];
+                updateTable();
+                updateStats();
+                showResult("Vérification de tous les emails terminée", "valid");
+            }, 2000);
+        }
+    }
+
+    function loadFromBackend() {
+        showResult("Chargement des emails... <span class='loading'></span>", "valid");
+
+        setTimeout(() => {
+            const demoEmails = [
+                { id: 1, address: "etudiant1@universite.fr", status: "valide", isActive: true },
+                { id: 2, address: "etudiant2@universite.fr", status: "erronée", isActive: true },
+                { id: 3, address: "professeur@universite.fr", status: "valide", isActive: true },
+                { id: 4, address: "admin@universite.fr", status: "valide", isActive: true },
+                { id: 5, address: "etudiant3@universite.fr", status: "obsolète", isActive: false }
+            ];
+
+            originalEmails = demoEmails;
+            emails = [...originalEmails];
+            updateTable();
+            updateStats();
+            showResult(demoEmails.length + " emails chargés", "valid");
+        }, 1000);
+    }
+
+    function nextPage() {
+        const totalPages = Math.ceil(emails.length / rowsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            updateTable();
+        }
+    }
+
+    function prevPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            updateTable();
+        }
+    }
+
+    function downloadCleanedCSV() {
+        const cleanedEmails = emails.filter(e => e.status === "valide").map(e => e.address);
+        if (cleanedEmails.length === 0) {
+            showResult("Aucun email valide à télécharger", "invalid");
+            return;
+        }
+        const csvContent = "email\n" + cleanedEmails.join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "emails_valides.csv";
+        a.click();
+        window.URL.revokeObjectURL(url);
+        showConfirmation("CSV téléchargé avec succès!");
+    }
+
+    function downloadCleanedPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const cleanedEmails = emails.filter(e => e.status === "valide").map(e => e.address);
+        if (cleanedEmails.length === 0) {
+            showResult("Aucun email valide à télécharger", "invalid");
+            return;
+        }
+        doc.text("Liste des Emails Valides", 10, 10);
+        let yPosition = 20;
+        cleanedEmails.forEach((email, index) => {
+            if (yPosition > 270) {
+                doc.addPage();
+                yPosition = 20;
+            }
+            doc.text(email, 10, yPosition);
+            yPosition += 10;
+        });
+        doc.save("emails_valides.pdf");
+        showConfirmation("PDF téléchargé avec succès!");
+    }
+
+    function showConfirmation(message) {
+        const confirmDiv = document.getElementById("confirmation");
+        confirmDiv.innerText = message;
+        confirmDiv.style.display = "block";
+        setTimeout(() => confirmDiv.style.display = "none", 2000);
+    }
+
+    // Initialisation au chargement de la page
+    window.onload = function() {
+        updateTable();
+        updateStats();
+    };
+</script>
+</body>
+</html>
