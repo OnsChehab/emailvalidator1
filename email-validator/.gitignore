@@ -31,3 +31,13 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+email_validator.db
+
+# Logs
+logs/
+*.log

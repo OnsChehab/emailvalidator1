@@ -1,10 +1,11 @@
 package com.example.email_validator.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,32 +15,50 @@ public class Email {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "address", nullable = false, unique = true, length = 255)
+    @NotBlank(message = "L'adresse email est obligatoire")
+    @Pattern(regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
+            message = "Format d'email invalide")
+    @Column(unique = true, nullable = false)
     private String address;
 
-    @Column(name = "status", nullable = false, length = 20)
-    private String status;
+    @Column(nullable = false)
+    private String status = "invalid";
 
-    @Column(name = "is_active", nullable = false)// valide, erronée, obsolète
-    private Boolean isActive;
+    @Column(name = "is_active")
+    private Boolean isActive = false;
 
+    // AJOUT: Champs timestamp CORRIGÉS
     @Column(name = "created_at", updatable = false)
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
+    @Column(name = "updated_at")
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+
+    // Constructeurs
+    public Email() {}
+
+    public Email(String address, String status, Boolean isActive) {
+        this.address = address;
+        this.status = status;
+        this.isActive = isActive;
     }
 
-    // Getters and setters
+    // Getters et Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+
+    // AJOUT: Getters pour les timestamps
     public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

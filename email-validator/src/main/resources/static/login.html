@@ -3,198 +3,604 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - Validateur d'Emails</title>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Connexion - Validateur d'Emails Universitaires</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --primary-blue: #1e3a8a;
+            --secondary-blue: #3b82f6;
+            --light-blue: #dbeafe;
+            --white: #ffffff;
+            --light-gray: #f8fafc;
+            --dark-gray: #374151;
+            --border-gray: #e2e8f0;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --valid-green: #10b981;
+            --invalid-red: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Open Sans', sans-serif;
-            background-color: #f5f5f5;
-            color: #2a2a2a;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: var(--text-dark);
             line-height: 1.6;
+            min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #0a2a5e 0%, #4682b4 100%);
+            justify-content: center;
+            padding: 20px;
         }
+
         .login-container {
-            max-width: 400px;
             width: 100%;
-            padding: 30px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            max-width: 420px;
+        }
+
+        .login-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border: 1px solid var(--border-gray);
+        }
+
+        .login-header {
             text-align: center;
+            margin-bottom: 30px;
         }
-        .login-container h2 {
-            margin-bottom: 20px;
-            color: #0a2a5e;
-            font-size: 24px;
+
+        .login-logo {
+            background: var(--light-blue);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            border: 3px solid var(--secondary-blue);
         }
-        .logo {
-            margin-bottom: 20px;
-            color: #0a2a5e;
-            font-size: 32px;
+
+        .login-logo i {
+            font-size: 2.5rem;
+            color: var(--primary-blue);
         }
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        .input-group label {
-            display: block;
-            margin-bottom: 5px;
+
+        .login-header h1 {
+            color: var(--primary-blue);
+            font-size: 1.8rem;
             font-weight: 600;
-            color: #0a2a5e;
+            margin-bottom: 8px;
         }
-        input[type="text"], input[type="password"] {
+
+        .login-header p {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .login-form {
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        .input-with-icon input {
+            padding-left: 45px;
+        }
+
+        .form-group input {
             width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            border: 1px solid #d3d3d3;
-            border-radius: 6px;
+            padding: 14px;
+            border: 1px solid var(--border-gray);
+            border-radius: 10px;
+            font-size: 1rem;
             transition: all 0.3s ease;
+            background: var(--light-gray);
         }
-        input:focus {
-            border-color: #4682b4;
-            box-shadow: 0 0 8px rgba(70, 130, 180, 0.3);
+
+        .form-group input:focus {
             outline: none;
+            border-color: var(--secondary-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: var(--white);
         }
-        button {
+
+        .login-btn {
             width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            background-color: #4682b4;
-            color: white;
+            background: var(--secondary-blue);
+            color: var(--white);
             border: none;
-            border-radius: 6px;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        button:hover {
-            background-color: #356ea8;
+
+        .login-btn:hover {
+            background: var(--primary-blue);
             transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(70, 130, 180, 0.3);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
-        #result {
-            margin-top: 15px;
-            font-weight: 600;
-            padding: 10px;
-            border-radius: 4px;
+
+        .login-btn:active {
+            transform: translateY(0);
         }
-        .valid {
-            color: #27ae60;
-            background-color: #e8f5e9;
+
+        .login-btn:disabled {
+            background: var(--text-light);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
-        .invalid {
-            color: #e74c3c;
-            background-color: #ffebee;
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideDown 0.3s ease;
         }
-        .info {
-            color: #3498db;
-            background-color: #e3f2fd;
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .demo-credentials {
-            margin-top: 20px;
+
+        .alert-success {
+            background: #d1fae5;
+            color: var(--valid-green);
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: var(--invalid-red);
+            border: 1px solid #fecaca;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fde68a;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border-gray);
+        }
+
+        .login-footer p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .demo-accounts {
+            background: var(--light-gray);
+            border-radius: 10px;
             padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 6px;
-            text-align: left;
-            font-size: 14px;
-        }
-        .demo-credentials h3 {
-            margin-bottom: 10px;
-            color: #0a2a5e;
-        }
-        .footer {
             margin-top: 20px;
-            font-size: 12px;
-            color: #666;
+            text-align: left;
+        }
+
+        .demo-accounts h3 {
+            color: var(--primary-blue);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .demo-account {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 0.85rem;
+        }
+
+        .demo-account .username {
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .demo-account .password {
+            color: var(--text-light);
+            font-family: monospace;
+        }
+
+        .demo-account .role {
+            background: var(--secondary-blue);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin-left: 10px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--white);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .security-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+            color: var(--valid-green);
+            font-size: 0.8rem;
+            justify-content: center;
+        }
+
+        /* Animations pour le formulaire */
+        .login-card {
+            animation: fadeInUp 0.6s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 30px 25px;
+            }
+
+            .login-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .login-logo {
+                width: 70px;
+                height: 70px;
+            }
+
+            .login-logo i {
+                font-size: 2rem;
+            }
+        }
+
+        /* Effets de focus accessibilité */
+        .login-btn:focus {
+            outline: 2px solid var(--primary-blue);
+            outline-offset: 2px;
+        }
+
+        input:focus {
+            outline: 2px solid var(--secondary-blue);
+            outline-offset: 2px;
+        }
+
+        /* Transition pour les états de hover */
+        .form-group input, .login-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
     </style>
 </head>
 <body>
 <div class="login-container">
-    <div class="logo">
-        <i class="fas fa-envelope"></i>
-    </div>
-    <h2>Connexion</h2>
-    <form id="loginForm">
-        <div class="input-group">
-            <label for="username">Nom d'utilisateur</label>
-            <input type="text" id="username" name="username" placeholder="Entrez votre nom d'utilisateur" required>
+    <div class="login-card">
+        <!-- En-tête -->
+        <div class="login-header">
+            <div class="login-logo">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <h1>Connexion</h1>
+            <p>Validateur d'Emails Universitaires</p>
         </div>
-        <div class="input-group">
-            <label for="password">Mot de passe</label>
-            <input type="password" id="password" name="password" placeholder="Entrez votre mot de passe" required>
+
+        <!-- Messages d'alerte -->
+        <div id="alertContainer"></div>
+
+        <!-- Formulaire de connexion -->
+        <form class="login-form" id="loginForm" method="post" action="/api/auth/login">
+            <div class="form-group">
+                <label for="username">Nom d'utilisateur</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="username" name="username" required
+                           placeholder="Entrez votre nom d'utilisateur"
+                           autocomplete="username">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" name="password" required
+                           placeholder="Entrez votre mot de passe"
+                           autocomplete="current-password">
+                </div>
+            </div>
+
+            <button type="submit" class="login-btn" id="loginButton">
+                <i class="fas fa-sign-in-alt"></i>
+                <span id="loginText">Se connecter</span>
+                <div class="loading" id="loginLoading" style="display: none;"></div>
+            </button>
+        </form>
+
+        <!-- Informations de démonstration -->
+        <div class="demo-accounts">
+            <h3><i class="fas fa-info-circle"></i> Comptes de démonstration</h3>
+            <div class="demo-account">
+                <div>
+                    <span class="username">admin</span>
+                    <span class="role">ADMIN</span>
+                </div>
+                <span class="password">admin123</span>
+            </div>
+            <div class="demo-account">
+                <div>
+                    <span class="username">user</span>
+                    <span class="role">USER</span>
+                </div>
+                <span class="password">user123</span>
+            </div>
         </div>
-        <button type="submit">Se connecter <i class="fas fa-sign-in-alt"></i></button>
-    </form>
-    <div id="result"></div>
 
-    <div class="demo-credentials">
-        <h3>Identifiants de démonstration:</h3>
-        <p><strong>Utilisateur:</strong> admin</p>
-        <p><strong>Mot de passe:</strong> admin123</p>
-    </div>
-
-    <div class="footer">
-        <p>Validateur d'Emails Universitaire &copy; 2023</p>
+        <!-- Pied de page -->
+        <div class="login-footer">
+            <div class="security-info">
+                <i class="fas fa-shield-alt"></i>
+                <span>Connexion sécurisée par Spring Security</span>
+            </div>
+            <p>Plateforme de validation d'emails universitaires</p>
+        </div>
     </div>
 </div>
 
 <script>
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+    // Gestion de la connexion
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('loginForm');
+        const loginButton = document.getElementById('loginButton');
+        const loginText = document.getElementById('loginText');
+        const loginLoading = document.getElementById('loginLoading');
 
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        const resultDiv = document.getElementById('result');
+        // Vérifier les paramètres d'URL pour les messages
+        checkUrlParameters();
 
-        // Afficher un indicateur de chargement
-        resultDiv.innerHTML = 'Connexion en cours... <i class="fas fa-spinner fa-spin"></i>';
-        resultDiv.className = 'info';
+        // Gestion de la soumission du formulaire
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-        // Simuler un délai de connexion
-        setTimeout(() => {
-            // Validation avec les bons identifiants
-            if (username === 'admin' && password === 'admin123') {
-                resultDiv.innerHTML = 'Connexion réussie! Redirection...';
-                resultDiv.className = 'valid';
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
 
-                // Stocker l'état de connexion dans le localStorage
-                localStorage.setItem('isAuthenticated', 'true');
-                localStorage.setItem('username', username);
-
-                // Rediriger vers la page principale après un court délai
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1000);
-            } else {
-                resultDiv.innerHTML = 'Nom d\'utilisateur ou mot de passe incorrect';
-                resultDiv.className = 'invalid';
+            if (!username || !password) {
+                showAlert('Veuillez remplir tous les champs', 'error');
+                return;
             }
-        }, 1500);
+
+            // Désactiver le bouton et afficher le loading
+            setLoginButtonState(true);
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    // Connexion réussie
+                    showAlert('Connexion réussie! Redirection...', 'success');
+
+                    // Attendre un peu pour montrer le message de succès
+                    setTimeout(() => {
+                        window.location.href = '/index.html';
+                    }, 1000);
+
+                } else {
+                    // Erreur de connexion
+                    const errorText = await response.text();
+                    throw new Error('Identifiants incorrects');
+                }
+
+            } catch (error) {
+                console.error('Erreur de connexion:', error);
+                showAlert(error.message || 'Erreur de connexion au serveur', 'error');
+                setLoginButtonState(false);
+            }
+        });
+
+        // Animation d'entrée pour les champs
+        animateFormElements();
     });
 
-    // Vérifier les paramètres d'URL pour les messages
-    const urlParams = new URLSearchParams(window.location.search);
-    const resultDiv = document.getElementById('result');
+    function setLoginButtonState(loading) {
+        const loginButton = document.getElementById('loginButton');
+        const loginText = document.getElementById('loginText');
+        const loginLoading = document.getElementById('loginLoading');
 
-    if (urlParams.has('error')) {
-        resultDiv.innerHTML = 'Nom d\'utilisateur ou mot de passe incorrect';
-        resultDiv.className = 'invalid';
+        if (loading) {
+            loginButton.disabled = true;
+            loginText.textContent = 'Connexion...';
+            loginLoading.style.display = 'inline-block';
+        } else {
+            loginButton.disabled = false;
+            loginText.textContent = 'Se connecter';
+            loginLoading.style.display = 'none';
+        }
     }
-    if (urlParams.has('logout')) {
-        resultDiv.innerHTML = 'Déconnexion réussie';
-        resultDiv.className = 'valid';
+
+    function checkUrlParameters() {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        if (urlParams.has('error')) {
+            const errorType = urlParams.get('error');
+            let message = 'Erreur de connexion';
+
+            if (errorType === 'true') {
+                message = 'Nom d\'utilisateur ou mot de passe incorrect';
+            } else if (errorType === 'auth') {
+                message = 'Authentification requise';
+            } else if (errorType === 'access') {
+                message = 'Accès non autorisé';
+            }
+
+            showAlert(message, 'error');
+
+            // Nettoyer l'URL
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+        }
+
+        if (urlParams.has('logout')) {
+            showAlert('Déconnexion réussie', 'success');
+
+            // Nettoyer l'URL
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+        }
+
+        if (urlParams.has('expired')) {
+            showAlert('Session expirée, veuillez vous reconnecter', 'warning');
+
+            // Nettoyer l'URL
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+        }
     }
-    if (urlParams.has('auth')) {
-        resultDiv.innerHTML = 'Veuillez vous connecter pour accéder à l\'application';
-        resultDiv.className = 'invalid';
+
+    function showAlert(message, type) {
+        const alertContainer = document.getElementById('alertContainer');
+
+        // Supprimer les alertes existantes
+        alertContainer.innerHTML = '';
+
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type}`;
+
+        const icon = type === 'success' ? 'check-circle' :
+            type === 'error' ? 'exclamation-circle' : 'exclamation-triangle';
+
+        alert.innerHTML = `
+                <i class="fas fa-${icon}"></i>
+                ${message}
+            `;
+
+        alertContainer.appendChild(alert);
+
+        // Supprimer automatiquement après 5 secondes (sauf pour les succès de déconnexion)
+        if (type !== 'success' || !message.includes('déconnexion')) {
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
     }
+
+    function animateFormElements() {
+        const formGroups = document.querySelectorAll('.form-group');
+        formGroups.forEach((group, index) => {
+            group.style.opacity = '0';
+            group.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                group.style.transition = 'all 0.5s ease';
+                group.style.opacity = '1';
+                group.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    }
+
+    // Effet de focus amélioré pour les inputs
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+        });
+
+        input.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    });
+
+    // Raccourci clavier : Entrée pour soumettre le formulaire
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.target.matches('button')) {
+            const loginButton = document.getElementById('loginButton');
+            if (!loginButton.disabled) {
+                loginButton.click();
+            }
+        }
+    });
+
+    // Auto-focus sur le champ username
+    window.onload = function() {
+        document.getElementById('username').focus();
+    };
 </script>
 </body>
 </html>

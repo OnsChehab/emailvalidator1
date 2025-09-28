@@ -3,615 +3,1510 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Validateur d'Emails Universitaire</title>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Validateur d'Emails Universitaires - Administration</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Open Sans', sans-serif; background-color: #f5f5f5; color: #2a2a2a; line-height: 1.6; }
-        .header {
-            background-color: #0a2a5e;
-            color: white;
-            text-align: center;
+        :root {
+            --primary-blue: #1e3a8a;
+            --secondary-blue: #3b82f6;
+            --light-blue: #dbeafe;
+            --white: #ffffff;
+            --light-gray: #f8fafc;
+            --dark-gray: #374151;
+            --border-gray: #e2e8f0;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --valid-green: #10b981;
+            --obsolete-orange: #f59e0b;
+            --invalid-red: #ef4444;
+            --warning-yellow: #fbbf24;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
             padding: 20px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header avec déconnexion */
+        .header {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 20px 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-gray);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .header h1 { margin: 0; flex-grow: 1; }
+
+        .header-content h1 {
+            color: var(--primary-blue);
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .header-content p {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-details {
+            text-align: right;
+        }
+
+        .username {
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        .user-role {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
         .logout-btn {
-            background-color: #e74c3c;
-            color: white;
+            background: var(--invalid-red);
+            color: var(--white);
             border: none;
             padding: 10px 20px;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 14px;
+            font-weight: 600;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+
         .logout-btn:hover {
-            background-color: #c0392b;
+            background: #dc2626;
             transform: translateY(-2px);
         }
-        .container { max-width: 1200px; margin: 20px auto; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); }
-        .search-section { margin-bottom: 20px; text-align: center; }
-        #searchInput { padding: 12px; font-size: 16px; border: 1px solid #d3d3d3; border-radius: 6px; width: 300px; transition: all 0.3s ease; }
-        #searchInput:focus { border-color: #4682b4; box-shadow: 0 0 8px rgba(70, 130, 180, 0.3); outline: none; }
-        .form-section { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
-        .input-group { display: flex; gap: 10px; align-items: center; }
-        input[type="file"], input[type="email"] { padding: 12px; font-size: 16px; border: 1px solid #d3d3d3; border-radius: 6px; width: 300px; transition: all 0.3s ease; }
-        input[type="file"]:focus, input[type="email"]:focus { border-color: #4682b4; box-shadow: 0 0 8px rgba(70, 130, 180, 0.3); outline: none; }
-        button { padding: 12px 30px; font-size: 16px; background-color: #4682b4; color: white; border: none; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; }
-        button:hover { background-color: #356ea8; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(70, 130, 180, 0.3); }
-        #result { text-align: center; margin-top: 15px; font-weight: 600; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .valid { color: #27ae60; }
-        .invalid, .obsolete { color: #e74c3c; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0 5px; margin-top: 10px; }
-        th, td { padding: 14px; text-align: left; background: white; }
-        th { background-color: #add8e6; color: #2a2a2a; border-radius: 6px 6px 0 0; }
-        tr { box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); border-radius: 6px; transition: transform 0.2s ease; }
-        tr:hover { transform: scale(1.01); background: #f0f8ff; }
-        .delete-btn, .update-btn, .verify-btn, .batch-verify-btn { padding: 8px 15px; border: none; border-radius: 4px; color: white; cursor: pointer; transition: all 0.3s ease; }
-        .delete-btn { background-color: #e74c3c; }
-        .delete-btn:hover { background-color: #c0392b; }
-        .update-btn { background-color: #4682b4; margin-right: 5px; }
-        .update-btn:hover { background-color: #356ea8; }
-        .verify-btn { background-color: #27ae60; margin-left: 5px; }
-        .verify-btn:hover { background-color: #219653; }
-        .batch-verify-btn { background-color: #f39c12; margin-right: 10px; }
-        .batch-verify-btn:hover { background-color: #e67e22; }
-        .action-section { text-align: center; padding-top: 20px; border-top: 1px solid #d3d3d3; }
-        .pagination { margin-top: 20px; text-align: center; }
-        .page-info { text-align: center; margin-top: 10px; font-style: italic; color: #666; }
-        @media (max-width: 768px) {
-            .header { flex-direction: column; gap: 10px; }
-            .input-group { flex-direction: column; width: 100%; }
-            input[type="file"], input[type="email"], #searchInput { width: 100%; }
+
+        /* Navigation par onglets */
+        .tabs {
+            display: flex;
+            background: var(--white);
+            border-radius: 12px;
+            padding: 5px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .confirmation {
+
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .tab.active {
+            background: var(--secondary-blue);
+            color: var(--white);
+        }
+
+        .tab:hover:not(.active) {
+            background: var(--light-gray);
+            color: var(--primary-blue);
+        }
+
+        /* Contenu des onglets */
+        .tab-content {
             display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #27ae60;
-            color: white;
-            padding: 20px;
-            border-radius: 5px;
-            z-index: 1000;
         }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cartes principales */
+        .card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-gray);
+        }
+
+        .card h2 {
+            color: var(--primary-blue);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Section Upload CSV */
+        .upload-area {
+            border: 2px dashed var(--secondary-blue);
+            border-radius: 12px;
+            padding: 60px 40px;
+            background: var(--light-blue);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .upload-area:hover {
+            background: #ebf5ff;
+            border-color: var(--primary-blue);
+        }
+
+        .upload-area i {
+            font-size: 3rem;
+            color: var(--secondary-blue);
+            margin-bottom: 15px;
+        }
+
+        .upload-area h3 {
+            color: var(--primary-blue);
+            margin-bottom: 10px;
+        }
+
+        .upload-area p {
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .browse-btn {
+            background: var(--secondary-blue);
+            color: var(--white);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .browse-btn:hover {
+            background: var(--primary-blue);
+            transform: translateY(-2px);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* Statistiques */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid var(--border-gray);
+            transition: transform 0.3s ease;
+            border-top: 4px solid var(--secondary-blue);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card.valid { border-top-color: var(--valid-green); }
+        .stat-card.obsolete { border-top-color: var(--obsolete-orange); }
+        .stat-card.invalid { border-top-color: var(--invalid-red); }
+        .stat-card.total { border-top-color: var(--secondary-blue); }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .valid .stat-number { color: var(--valid-green); }
+        .obsolete .stat-number { color: var(--obsolete-orange); }
+        .invalid .stat-number { color: var(--invalid-red); }
+        .total .stat-number { color: var(--secondary-blue); }
+
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Formulaire CRUD */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--secondary-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-group input {
+            width: auto;
+        }
+
+        /* Boutons d'action */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--secondary-blue);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-blue);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--valid-green);
+            color: var(--white);
+        }
+
+        .btn-success:hover {
+            background: #0d9c6d;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--invalid-red);
+            color: var(--white);
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: var(--obsolete-orange);
+            color: var(--white);
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+        }
+
+        /* Barre de recherche et filtres */
+        .search-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .filter-select {
+            padding: 12px;
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            background: var(--white);
+            min-width: 150px;
+        }
+
+        /* Tableau des emails */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border-gray);
+            background: var(--white);
+        }
+
+        .email-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .email-table th {
+            background: var(--light-blue);
+            color: var(--primary-blue);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .email-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .email-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .email-table tr:hover {
+            background: var(--light-gray);
+        }
+
         .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-valid {
+            background: #d1fae5;
+            color: var(--valid-green);
+        }
+
+        .status-obsolete {
+            background: #fef3c7;
+            color: var(--obsolete-orange);
+        }
+
+        .status-invalid {
+            background: #fee2e2;
+            color: var(--invalid-red);
+        }
+
+        .active-badge {
             padding: 4px 8px;
             border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
+            font-size: 0.8rem;
+            font-weight: 600;
         }
-        .status-valide { background-color: #e8f5e9; color: #2e7d32; }
-        .status-erronée { background-color: #ffebee; color: #c62828; }
-        .status-obsolète { background-color: #fff3e0; color: #ef6c00; }
-        .user-info {
-            color: white;
-            margin-right: 15px;
-            font-size: 14px;
+
+        .active-true {
+            background: #d1fae5;
+            color: var(--valid-green);
         }
+
+        .active-false {
+            background: #fee2e2;
+            color: var(--invalid-red);
+        }
+
+        .action-buttons-small {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 20px;
+        }
+
+        .page-info {
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        /* Alertes */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: var(--valid-green);
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: var(--invalid-red);
+            border: 1px solid #fecaca;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: var(--obsolete-orange);
+            border: 1px solid #fde68a;
+        }
+
+        /* Loading */
         .loading {
             display: inline-block;
             width: 20px;
             height: 20px;
             border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
+            border-top: 3px solid var(--secondary-blue);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .stats-section {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
-            text-align: center;
         }
-        .stats-item {
-            display: inline-block;
-            margin: 0 15px;
-            padding: 10px;
-            background: white;
-            border-radius: 6px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+        .modal-title {
+            color: var(--primary-blue);
+            font-size: 1.3rem;
+            font-weight: 600;
         }
-        .stats-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #0a2a5e;
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
         }
-        .refresh-btn {
-            background-color: #3498db;
-            margin-right: 10px;
+
+        .close-modal:hover {
+            color: var(--invalid-red);
         }
-        .refresh-btn:hover {
-            background-color: #2980b9;
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .user-info {
+                justify-content: center;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-section {
+                flex-direction: column;
+            }
+
+            .search-box {
+                min-width: auto;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+        }
+
+        /* File info */
+        .file-info {
+            background: var(--light-gray);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .file-info.show {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-details .file-name {
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        .file-details .file-size {
+            color: var(--text-light);
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
-<div class="header">
-    <h1>Validateur d'Emails Universitaire</h1>
-    <div>
-        <span class="user-info" id="userInfo">Connecté en tant que: </span>
-        <button class="logout-btn" onclick="logout()">
-            <i class="fas fa-sign-out-alt"></i> Déconnexion
-        </button>
+<div class="container">
+    <!-- Header avec informations utilisateur -->
+    <div class="header">
+        <div class="header-content">
+            <h1><i class="fas fa-envelope"></i> Validateur d'Emails Universitaires</h1>
+            <p>Plateforme complète de gestion et validation d'emails académiques</p>
+        </div>
+        <div class="user-info">
+            <div class="user-details">
+                <div class="username" id="username">Chargement...</div>
+                <div class="user-role" id="userrole">Connecté en tant que</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </button>
+        </div>
+    </div>
+
+    <!-- Navigation par onglets -->
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('upload')">
+            <i class="fas fa-upload"></i> Import CSV
+        </div>
+        <div class="tab" onclick="switchTab('manage')">
+            <i class="fas fa-list"></i> Gestion des Emails
+        </div>
+        <div class="tab" onclick="switchTab('add')">
+            <i class="fas fa-plus"></i> Ajouter un Email
+        </div>
+        <div class="tab" onclick="switchTab('stats')">
+            <i class="fas fa-chart-bar"></i> Statistiques
+        </div>
+    </div>
+
+    <!-- Conteneur d'alertes -->
+    <div id="alertContainer"></div>
+
+    <!-- Onglet 1: Import CSV -->
+    <div id="upload-tab" class="tab-content active">
+        <div class="card">
+            <h2><i class="fas fa-file-csv"></i> Importation de Fichier CSV</h2>
+
+            <div class="upload-area" id="uploadArea">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h3>Déposer votre fichier CSV</h3>
+                <p>Glissez-déposez un fichier CSV ou cliquez pour parcourir</p>
+                <p style="font-size: 0.9rem; color: var(--text-light);">
+                    Format accepté : .csv (colonnes : email ou address)
+                </p>
+                <button class="browse-btn" onclick="document.getElementById('csvFile').click()">
+                    <i class="fas fa-folder-open"></i> Parcourir les fichiers
+                </button>
+                <input type="file" id="csvFile" class="file-input" accept=".csv" onchange="handleFileSelect(this.files[0])">
+            </div>
+
+            <!-- File Info -->
+            <div class="file-info" id="fileInfo">
+                <div class="file-details">
+                    <span class="file-name" id="fileName"></span>
+                    <span class="file-size" id="fileSize"></span>
+                </div>
+                <button class="btn btn-primary" onclick="processCSV()">
+                    <i class="fas fa-play"></i> Lancer l'analyse
+                </button>
+            </div>
+        </div>
+
+        <!-- Résultats de l'analyse -->
+        <div class="card" id="resultsCard" style="display: none;">
+            <h2><i class="fas fa-chart-pie"></i> Résultats de l'Analyse</h2>
+
+            <div class="stats-grid">
+                <div class="stat-card total">
+                    <i class="fas fa-envelope-open-text fa-2x"></i>
+                    <div class="stat-number" id="totalEmails">0</div>
+                    <div class="stat-label">Emails Total</div>
+                </div>
+                <div class="stat-card valid">
+                    <i class="fas fa-check-circle fa-2x"></i>
+                    <div class="stat-number" id="validEmails">0</div>
+                    <div class="stat-label">Valides</div>
+                </div>
+                <div class="stat-card obsolete">
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    <div class="stat-number" id="obsoleteEmails">0</div>
+                    <div class="stat-label">Obsolètes</div>
+                </div>
+                <div class="stat-card invalid">
+                    <i class="fas fa-times-circle fa-2x"></i>
+                    <div class="stat-number" id="invalidEmails">0</div>
+                    <div class="stat-label">Invalides</div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-success" onclick="exportValidCSV()">
+                    <i class="fas fa-file-csv"></i> Exporter les Valides en CSV
+                </button>
+                <button class="btn btn-danger" onclick="exportValidPDF()">
+                    <i class="fas fa-file-pdf"></i> Exporter les Valides en PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onglet 2: Gestion des emails -->
+    <div id="manage-tab" class="tab-content">
+        <div class="card">
+            <h2><i class="fas fa-list"></i> Gestion des Emails</h2>
+
+            <!-- Barre de recherche et filtres -->
+            <div class="search-section">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Rechercher un email...">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+                <select class="filter-select" id="statusFilter" onchange="filterEmails()">
+                    <option value="">Tous les statuts</option>
+                    <option value="valid">Valides</option>
+                    <option value="obsolete">Obsolètes</option>
+                    <option value="invalid">Invalides</option>
+                </select>
+                <select class="filter-select" id="activeFilter" onchange="filterEmails()">
+                    <option value="">Tous</option>
+                    <option value="true">Actifs</option>
+                    <option value="false">Inactifs</option>
+                </select>
+                <button class="btn btn-primary" onclick="loadEmails()">
+                    <i class="fas fa-sync-alt"></i> Actualiser
+                </button>
+            </div>
+
+            <!-- Tableau des emails -->
+            <div class="table-container">
+                <table class="email-table">
+                    <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Statut</th>
+                        <th>Actif</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="emailTableBody">
+                    <!-- Les emails seront chargés ici -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <button class="btn btn-primary btn-sm" onclick="previousPage()" id="prevBtn">
+                    <i class="fas fa-chevron-left"></i> Précédent
+                </button>
+                <span class="page-info" id="pageInfo">Page 1 sur 1</span>
+                <button class="btn btn-primary btn-sm" onclick="nextPage()" id="nextBtn">
+                    Suivant <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onglet 3: Ajouter un email -->
+    <div id="add-tab" class="tab-content">
+        <div class="card">
+            <h2><i class="fas fa-plus-circle"></i> Ajouter un Nouvel Email</h2>
+
+            <form id="addEmailForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="newEmailAddress">Adresse Email *</label>
+                        <input type="email" id="newEmailAddress" required
+                               placeholder="exemple@universite.edu">
+                    </div>
+                    <div class="form-group">
+                        <label for="newEmailStatus">Statut</label>
+                        <select id="newEmailStatus">
+                            <option value="valid">Valide</option>
+                            <option value="obsolete">Obsolète</option>
+                            <option value="invalid">Invalide</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="newEmailActive">
+                        <label for="newEmailActive">Marquer comme actif</label>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Créer l'email
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="clearAddForm()">
+                        <i class="fas fa-eraser"></i> Effacer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Onglet 4: Statistiques -->
+    <div id="stats-tab" class="tab-content">
+        <div class="card">
+            <h2><i class="fas fa-chart-bar"></i> Statistiques Globales</h2>
+
+            <div class="stats-grid" id="globalStats">
+                <!-- Les statistiques seront chargées ici -->
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="loadStatistics()">
+                    <i class="fas fa-sync-alt"></i> Actualiser les stats
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="container">
-    <div class="stats-section" id="statsSection">
-        <div class="stats-item">
-            <div>Total</div>
-            <div class="stats-value" id="totalStats">0</div>
+<!-- Modal de modification -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fas fa-edit"></i> Modifier l'Email</h3>
+            <button class="close-modal" onclick="closeEditModal()">&times;</button>
         </div>
-        <div class="stats-item">
-            <div>Valides</div>
-            <div class="stats-value" id="valideStats">0</div>
-        </div>
-        <div class="stats-item">
-            <div>Erronées</div>
-            <div class="stats-value" id="erreurStats">0</div>
-        </div>
-        <div class="stats-item">
-            <div>Obsolètes</div>
-            <div class="stats-value" id="obsoleteStats">0</div>
-        </div>
+
+        <form id="editEmailForm">
+            <input type="hidden" id="editEmailId">
+
+            <div class="form-group">
+                <label for="editEmailAddress">Adresse Email *</label>
+                <input type="email" id="editEmailAddress" required>
+            </div>
+
+            <div class="form-group">
+                <label for="editEmailStatus">Statut</label>
+                <select id="editEmailStatus">
+                    <option value="valid">Valide</option>
+                    <option value="obsolete">Obsolète</option>
+                    <option value="invalid">Invalide</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="editEmailActive">
+                    <label for="editEmailActive">Email actif</label>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Sauvegarder
+                </button>
+                <button type="button" class="btn btn-danger" onclick="closeEditModal()">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+            </div>
+        </form>
     </div>
-
-    <div class="search-section">
-        <input type="text" id="searchInput" placeholder="Rechercher par email ou statut..." oninput="searchEmails()">
-    </div>
-
-    <div class="form-section">
-        <div class="input-group">
-            <input type="file" id="csvFile" accept=".csv">
-            <button onclick="loadCSV()">Charger CSV <i class="fas fa-upload"></i></button>
-        </div>
-
-        <div class="input-group">
-            <input type="email" id="manualEmail" placeholder="Entrer un email">
-            <button onclick="addManualEmail()">Ajouter <i class="fas fa-plus"></i></button>
-        </div>
-
-        <div class="input-group" id="editGroup" style="display: none;">
-            <input type="email" id="editEmail" placeholder="Modifier l'email">
-            <button onclick="updateEmail()">Sauvegarder <i class="fas fa-save"></i></button>
-            <button onclick="cancelEdit()">Annuler <i class="fas fa-times"></i></button>
-        </div>
-    </div>
-
-    <div id="result"></div>
-
-    <div class="table-section">
-        <table id="emailTable">
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Email</th>
-                <th>Statut</th>
-                <th>Actif</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody id="emailTableBody"></tbody>
-        </table>
-        <div class="page-info" id="pageInfo"></div>
-    </div>
-
-    <div class="action-section">
-        <button onclick="loadFromBackend()" class="refresh-btn">
-            <i class="fas fa-sync-alt"></i> Actualiser
-        </button>
-        <button onclick="verifyAllEmails()" class="batch-verify-btn">
-            <i class="fas fa-check-double"></i> Vérifier Tous
-        </button>
-        <button onclick="downloadCleanedCSV()">
-            <i class="fas fa-file-csv"></i> Télécharger CSV
-        </button>
-        <button onclick="downloadCleanedPDF()">
-            <i class="fas fa-file-pdf"></i> Télécharger PDF
-        </button>
-        <div class="pagination">
-            <button onclick="prevPage()">
-                <i class="fas fa-chevron-left"></i> Précédent
-            </button>
-            <button onclick="nextPage()">
-                Suivant <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
-    </div>
-
-    <div id="confirmation" class="confirmation"></div>
 </div>
 
 <script>
-    // Vérifier l'authentification au chargement
-    if (!localStorage.getItem('isAuthenticated')) {
-        window.location.href = 'login.html?auth=true';
-    }
-
+    // Configuration
+    const API_BASE = '/api';
+    let currentUser = null;
     let emails = [];
-    let originalEmails = [];
-    let editIndex = -1;
+    let filteredEmails = [];
     let currentPage = 1;
-    const rowsPerPage = 10;
+    const itemsPerPage = 10;
+    let currentEditId = null;
+    let analysisResults = null;
 
-    // Afficher le nom d'utilisateur
-    document.getElementById('userInfo').textContent += localStorage.getItem('username') || 'Administrateur';
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', function() {
+        checkAuthentication();
+        initializeEventListeners();
+    });
 
-    function logout() {
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('username');
-        window.location.href = 'login.html?logout=true';
-    }
-
-    function loadCSV() {
-        const fileInput = document.getElementById("csvFile");
-        const file = fileInput.files[0];
-        if (!file) {
-            showResult("Veuillez sélectionner un fichier CSV", "invalid");
-            return;
-        }
-        if (!file.name.endsWith('.csv')) {
-            showResult("Le fichier doit être au format CSV", "invalid");
-            return;
-        }
-        const formData = new FormData();
-        formData.append("file", file);
-
-        showResult("Traitement du CSV en cours... <span class='loading'></span>", "valid");
-
-        apiCall('/emails/upload-csv', { method: 'POST', body: formData })
-            .then(savedEmails => {
-                if (!Array.isArray(savedEmails)) {
-                    showResult("Erreur: Format de réponse invalide du serveur", "invalid");
-                    return;
-                }
-
-                // Mettre à jour l'état local avec les nouveaux emails
-                originalEmails = savedEmails;
-                emails = [...originalEmails];
-                updateTable();
-                updateStats();
-                showResult("CSV chargé avec succès: " + savedEmails.length + " emails ajoutés", "valid");
-            })
-            .catch(error => {
-                console.error("CSV upload error:", error);
-                showResult("Erreur lors de l'upload: " + error.message, "invalid");
+    // Vérification de l'authentification
+    async function checkAuthentication() {
+        try {
+            const response = await fetch(API_BASE + '/auth/user', {
+                credentials: 'include'
             });
+
+            if (response.ok) {
+                const userData = await response.json();
+                if (userData.authenticated) {
+                    currentUser = userData;
+                    updateUserInterface();
+                    loadInitialData();
+                } else {
+                    redirectToLogin();
+                }
+            } else {
+                redirectToLogin();
+            }
+        } catch (error) {
+            console.error('Erreur de vérification auth:', error);
+            redirectToLogin();
+        }
     }
 
-    function addManualEmail() {
-        const emailInput = document.getElementById("manualEmail");
-        const email = emailInput.value.trim();
-        if (!email) {
-            showResult("Veuillez entrer un email", "invalid");
-            return;
-        }
-
-        showResult("Ajout de l'email en cours... <span class='loading'></span>", "valid");
-
-        setTimeout(() => {
-            const newEmail = {
-                id: originalEmails.length + 1,
-                address: email,
-                status: "valide",
-                isActive: true
-            };
-
-            originalEmails.push(newEmail);
-            emails.push(newEmail);
-            updateTable();
-            updateStats();
-            showResult("Email ajouté avec succès", "valid");
-            emailInput.value = "";
-        }, 1000);
+    function redirectToLogin() {
+        window.location.href = '/login.html?error=auth';
     }
 
-    function updateTable() {
-        const tbody = document.getElementById("emailTableBody");
-        tbody.innerHTML = "";
-
-        if (emails.length === 0) {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-            <td colspan="5" style="text-align: center; padding: 20px; color: #666;">
-                <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 10px;"></i>
-                <br>
-                Aucun email à afficher. Veuillez importer un fichier CSV ou ajouter des emails manuellement.
-            </td>
-        `;
-            tbody.appendChild(row);
-            updatePaginationInfo();
-            return;
+    function updateUserInterface() {
+        if (currentUser) {
+            document.getElementById('username').textContent = currentUser.username;
+            document.getElementById('userrole').textContent =
+                `Rôle: ${currentUser.roles ? currentUser.roles[0].authority : 'USER'}`;
         }
+    }
 
-        const start = (currentPage - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        const pageEmails = emails.slice(start, end);
-
-        pageEmails.forEach((email, index) => {
-            const row = document.createElement("tr");
-            const statusText = email.status === 'valide' ? 'Valide' :
-                email.status === 'erronée' ? 'Erronée' :
-                    email.status === 'obsolète' ? 'Obsolète' : email.status;
-
-            row.innerHTML = `
-            <td>${email.id || 'N/A'}</td>
-            <td>${email.address || 'Non défini'}</td>
-            <td><span class="status-badge status-${email.status || 'valide'}">${statusText}</span></td>
-            <td>${email.isActive ? 'Oui' : 'Non'}</td>
-            <td>
-                <button class="update-btn" onclick="editEmail(${start + index})"><i class="fas fa-edit"></i> Modifier</button>
-                <button class="delete-btn" onclick="deleteEmail(${start + index})"><i class="fas fa-trash"></i> Supprimer</button>
-                <button class="verify-btn" onclick="verifyEmail(${start + index})"><i class="fas fa-check"></i> Vérifier</button>
-            </td>
-        `;
-            tbody.appendChild(row);
+    function initializeEventListeners() {
+        // Formulaire d'ajout
+        document.getElementById('addEmailForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            createEmail();
         });
 
-        updatePaginationInfo();
+        // Formulaire de modification
+        document.getElementById('editEmailForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            updateEmail();
+        });
+
+        // Recherche en temps réel
+        document.getElementById('searchInput').addEventListener('input', function() {
+            filterEmails();
+        });
+
+        // Drag and drop
+        initializeDragAndDrop();
     }
 
-    function updatePaginationInfo() {
-        const totalPages = Math.ceil(emails.length / rowsPerPage);
-        const pageInfo = document.getElementById("pageInfo");
-        if (totalPages > 0) {
-            pageInfo.textContent = `Page ${currentPage} sur ${totalPages} - ${emails.length} emails au total`;
-        } else {
-            pageInfo.textContent = "Aucun email à afficher";
+    function initializeDragAndDrop() {
+        const uploadArea = document.getElementById('uploadArea');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = '#ebf5ff';
+            uploadArea.style.borderColor = '#1e3a8a';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.background = '#dbeafe';
+            uploadArea.style.borderColor = '#3b82f6';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = '#dbeafe';
+            uploadArea.style.borderColor = '#3b82f6';
+
+            if (e.dataTransfer.files.length) {
+                handleFileSelect(e.dataTransfer.files[0]);
+            }
+        });
+    }
+
+    // Navigation par onglets
+    function switchTab(tabName) {
+        // Désactiver tous les onglets
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+
+        // Activer l'onglet sélectionné
+        document.querySelector(`.tab:nth-child(${getTabIndex(tabName)})`).classList.add('active');
+        document.getElementById(`${tabName}-tab`).classList.add('active');
+
+        // Charger les données si nécessaire
+        if (tabName === 'manage') {
+            loadEmails();
+        } else if (tabName === 'stats') {
+            loadStatistics();
         }
     }
 
-    function updateStats() {
-        const total = originalEmails.length;
-        const valide = originalEmails.filter(e => e.status === 'valide').length;
-        const erronee = originalEmails.filter(e => e.status === 'erronée').length;
-        const obsolete = originalEmails.filter(e => e.status === 'obsolète').length;
-
-        document.getElementById('totalStats').textContent = total;
-        document.getElementById('valideStats').textContent = valide;
-        document.getElementById('erreurStats').textContent = erronee;
-        document.getElementById('obsoleteStats').textContent = obsolete;
+    function getTabIndex(tabName) {
+        const tabs = { 'upload': 1, 'manage': 2, 'add': 3, 'stats': 4 };
+        return tabs[tabName] || 1;
     }
 
-    function deleteEmail(index) {
-        const email = emails[index];
-        if (!email.id) {
-            showResult("Impossible de supprimer: ID manquant", "invalid");
+    // Gestion des fichiers CSV
+    function handleFileSelect(file) {
+        if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith('.csv')) {
+            showAlert('Veuillez sélectionner un fichier CSV', 'error');
             return;
         }
-        if (confirm(`Êtes-vous sûr de vouloir supprimer l'email: ${email.address}?`)) {
-            showResult("Suppression en cours... <span class='loading'></span>", "valid");
 
-            setTimeout(() => {
-                emails.splice(index, 1);
-                originalEmails = originalEmails.filter(e => e.id !== email.id);
-                updateTable();
-                updateStats();
-                showResult("Email supprimé avec succès", "valid");
-            }, 1000);
-        }
+        currentFile = file;
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = `(${(file.size / 1024).toFixed(1)} KB)`;
+        document.getElementById('fileInfo').classList.add('show');
     }
 
-    function editEmail(index) {
-        editIndex = index;
-        document.getElementById("editEmail").value = emails[index].address;
-        document.getElementById("editGroup").style.display = "flex";
-        document.getElementById("manualEmail").style.display = "none";
-    }
-
-    function cancelEdit() {
-        editIndex = -1;
-        document.getElementById("editEmail").value = "";
-        document.getElementById("editGroup").style.display = "none";
-        document.getElementById("manualEmail").style.display = "inline";
-    }
-
-    function updateEmail() {
-        if (editIndex === -1) return;
-        const newEmail = document.getElementById("editEmail").value.trim();
-        if (!newEmail) {
-            showResult("Veuillez entrer un email valide", "invalid");
+    async function processCSV() {
+        if (!currentFile) {
+            showAlert('Veuillez d\'abord sélectionner un fichier', 'error');
             return;
         }
 
-        showResult("Mise à jour en cours... <span class='loading'></span>", "valid");
+        showAlert('Analyse du fichier CSV en cours...', 'warning');
+        setLoading(true);
 
-        setTimeout(() => {
-            const updatedEmail = {
-                ...emails[editIndex],
-                address: newEmail
-            };
+        const formData = new FormData();
+        formData.append('file', currentFile);
 
-            emails[editIndex] = updatedEmail;
-            originalEmails = originalEmails.map(e => e.id === updatedEmail.id ? updatedEmail : e);
-            updateTable();
-            updateStats();
-            cancelEdit();
-            showResult("Email modifié avec succès", "valid");
-        }, 1000);
-    }
+        try {
+            const response = await fetch(API_BASE + '/emails/upload-csv', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include'
+            });
 
-    function showResult(message, status) {
-        const result = document.getElementById("result");
-        result.innerHTML = message;
-        result.className = status;
-        setTimeout(() => { result.innerHTML = ''; }, 3000);
-    }
+            const result = await response.json();
 
-    function searchEmails() {
-        const searchTerm = document.getElementById("searchInput").value.toLowerCase();
-        if (searchTerm === "") {
-            emails = [...originalEmails];
-        } else {
-            emails = originalEmails.filter(e =>
-                e.address.toLowerCase().includes(searchTerm) ||
-                (e.status && e.status.toLowerCase().includes(searchTerm))
-            );
+            if (!response.ok) {
+                throw new Error(result.error || 'Erreur lors de l\'analyse');
+            }
+
+            analysisResults = result;
+            displayAnalysisResults(result);
+            showAlert(`Analyse terminée: ${result.savedEmails || 0} emails traités`, 'success');
+
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('Erreur lors de l\'analyse: ' + error.message, 'error');
+        } finally {
+            setLoading(false);
         }
+    }
+
+    function displayAnalysisResults(results) {
+        document.getElementById('resultsCard').style.display = 'block';
+
+        document.getElementById('totalEmails').textContent = results.totalLines || 0;
+        document.getElementById('validEmails').textContent = results.validEmails || 0;
+        document.getElementById('obsoleteEmails').textContent = results.obsoleteEmails || 0;
+        document.getElementById('invalidEmails').textContent = results.invalidEmails || 0;
+    }
+
+    // Gestion des emails (CRUD)
+    async function loadEmails() {
+        try {
+            const response = await fetch(API_BASE + '/emails', {
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Erreur de chargement');
+
+            emails = await response.json();
+            filteredEmails = [...emails];
+            currentPage = 1;
+            displayEmails();
+
+        } catch (error) {
+            showAlert('Erreur lors du chargement des emails: ' + error.message, 'error');
+        }
+    }
+
+    async function createEmail() {
+        const address = document.getElementById('newEmailAddress').value.trim();
+        const status = document.getElementById('newEmailStatus').value;
+        const isActive = document.getElementById('newEmailActive').checked;
+
+        if (!address) {
+            showAlert('Veuillez entrer une adresse email', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch(API_BASE + '/emails', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ address, status, isActive })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Erreur de création');
+            }
+
+            showAlert('Email créé avec succès', 'success');
+            clearAddForm();
+            loadEmails();
+
+        } catch (error) {
+            showAlert('Erreur lors de la création: ' + error.message, 'error');
+        }
+    }
+
+    function openEditModal(email) {
+        currentEditId = email.id;
+        document.getElementById('editEmailId').value = email.id;
+        document.getElementById('editEmailAddress').value = email.address;
+        document.getElementById('editEmailStatus').value = email.status;
+        document.getElementById('editEmailActive').checked = email.isActive || false;
+        document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+        currentEditId = null;
+    }
+
+    async function updateEmail() {
+        if (!currentEditId) return;
+
+        const address = document.getElementById('editEmailAddress').value.trim();
+        const status = document.getElementById('editEmailStatus').value;
+        const isActive = document.getElementById('editEmailActive').checked;
+
+        try {
+            const response = await fetch(API_BASE + '/emails/' + currentEditId, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ address, status, isActive })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Erreur de modification');
+            }
+
+            showAlert('Email modifié avec succès', 'success');
+            closeEditModal();
+            loadEmails();
+
+        } catch (error) {
+            showAlert('Erreur lors de la modification: ' + error.message, 'error');
+        }
+    }
+
+    async function deleteEmail(id, address) {
+        if (!confirm(`Êtes-vous sûr de vouloir supprimer l'email : ${address} ?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(API_BASE + '/emails/' + id, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Erreur de suppression');
+
+            showAlert('Email supprimé avec succès', 'success');
+            loadEmails();
+
+        } catch (error) {
+            showAlert('Erreur lors de la suppression: ' + error.message, 'error');
+        }
+    }
+
+    // Affichage des emails
+    function displayEmails() {
+        const tbody = document.getElementById('emailTableBody');
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageEmails = filteredEmails.slice(startIndex, endIndex);
+
+        tbody.innerHTML = '';
+
+        if (pageEmails.length === 0) {
+            tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-light);">
+                            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px; display: block;"></i>
+                            Aucun email à afficher
+                        </td>
+                    </tr>
+                `;
+        } else {
+            pageEmails.forEach(email => {
+                const row = document.createElement('tr');
+                const date = new Date(email.createdAt).toLocaleDateString('fr-FR');
+
+                row.innerHTML = `
+                        <td>${email.address}</td>
+                        <td><span class="status-badge status-${email.status}">${email.status}</span></td>
+                        <td><span class="active-badge active-${email.isActive}">${email.isActive ? 'Oui' : 'Non'}</span></td>
+                        <td>${date}</td>
+                        <td>
+                            <div class="action-buttons-small">
+                                <button class="btn btn-primary btn-sm" onclick="openEditModal(${JSON.stringify(email).replace(/"/g, '&quot;')})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteEmail(${email.id}, '${email.address}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                tbody.appendChild(row);
+            });
+        }
+
+        updatePagination();
+    }
+
+    function filterEmails() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value;
+        const activeFilter = document.getElementById('activeFilter').value;
+
+        filteredEmails = emails.filter(email => {
+            const matchesSearch = email.address.toLowerCase().includes(searchTerm);
+            const matchesStatus = !statusFilter || email.status === statusFilter;
+            const matchesActive = !activeFilter || email.isActive === (activeFilter === 'true');
+
+            return matchesSearch && matchesStatus && matchesActive;
+        });
+
         currentPage = 1;
-        updateTable();
+        displayEmails();
     }
 
-    function verifyEmail(index) {
-        const email = emails[index];
-        if (!email.id) {
-            showResult("Impossible de vérifier: ID manquant", "invalid");
-            return;
-        }
-        showResult("Vérification en cours... <span class='loading'></span>", "valid");
-
-        setTimeout(() => {
-            const statuses = ["valide", "erronée", "obsolète"];
-            const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-
-            const updatedEmail = {
-                ...email,
-                status: randomStatus
-            };
-
-            emails[index] = updatedEmail;
-            originalEmails = originalEmails.map(e => e.id === updatedEmail.id ? updatedEmail : e);
-            updateTable();
-            updateStats();
-
-            showResult(
-                `Email ${randomStatus === "valide" ? "valide" : randomStatus === "erronée" ? "erroné" : "obsolète"}`,
-                randomStatus === "valide" ? "valid" : "invalid"
-            );
-        }, 1500);
-    }
-
-    function verifyAllEmails() {
-        if (originalEmails.length === 0) {
-            showResult("Aucun email à vérifier", "invalid");
-            return;
-        }
-
-        if (confirm(`Vérifier ${originalEmails.length} email(s)?`)) {
-            showResult("Vérification de tous les emails en cours... <span class='loading'></span>", "valid");
-
-            setTimeout(() => {
-                const statuses = ["valide", "erronée", "obsolète"];
-
-                emails = emails.map(email => {
-                    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-                    return {
-                        ...email,
-                        status: randomStatus
-                    };
-                });
-
-                originalEmails = [...emails];
-                updateTable();
-                updateStats();
-                showResult("Vérification de tous les emails terminée", "valid");
-            }, 2000);
-        }
-    }
-
-    function loadFromBackend() {
-        showResult("Chargement des emails... <span class='loading'></span>", "valid");
-
-        setTimeout(() => {
-            const demoEmails = [
-                { id: 1, address: "etudiant1@universite.fr", status: "valide", isActive: true },
-                { id: 2, address: "etudiant2@universite.fr", status: "erronée", isActive: true },
-                { id: 3, address: "professeur@universite.fr", status: "valide", isActive: true },
-                { id: 4, address: "admin@universite.fr", status: "valide", isActive: true },
-                { id: 5, address: "etudiant3@universite.fr", status: "obsolète", isActive: false }
-            ];
-
-            originalEmails = demoEmails;
-            emails = [...originalEmails];
-            updateTable();
-            updateStats();
-            showResult(demoEmails.length + " emails chargés", "valid");
-        }, 1000);
+    function updatePagination() {
+        const totalPages = Math.ceil(filteredEmails.length / itemsPerPage);
+        document.getElementById('pageInfo').textContent = `Page ${currentPage} sur ${totalPages}`;
+        document.getElementById('prevBtn').disabled = currentPage === 1;
+        document.getElementById('nextBtn').disabled = currentPage === totalPages || totalPages === 0;
     }
 
     function nextPage() {
-        const totalPages = Math.ceil(emails.length / rowsPerPage);
+        const totalPages = Math.ceil(filteredEmails.length / itemsPerPage);
         if (currentPage < totalPages) {
             currentPage++;
-            updateTable();
+            displayEmails();
         }
     }
 
-    function prevPage() {
+    function previousPage() {
         if (currentPage > 1) {
             currentPage--;
-            updateTable();
+            displayEmails();
         }
     }
 
-    function downloadCleanedCSV() {
-        const cleanedEmails = emails.filter(e => e.status === "valide").map(e => e.address);
-        if (cleanedEmails.length === 0) {
-            showResult("Aucun email valide à télécharger", "invalid");
+    // Statistiques
+    async function loadStatistics() {
+        try {
+            const response = await fetch(API_BASE + '/emails/stats', {
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Erreur de chargement');
+
+            const stats = await response.json();
+            displayStatistics(stats);
+
+        } catch (error) {
+            showAlert('Erreur lors du chargement des statistiques: ' + error.message, 'error');
+        }
+    }
+
+    function displayStatistics(stats) {
+        const statsContainer = document.getElementById('globalStats');
+
+        statsContainer.innerHTML = `
+                <div class="stat-card total">
+                    <i class="fas fa-envelope fa-2x"></i>
+                    <div class="stat-number">${stats.totalEmails || 0}</div>
+                    <div class="stat-label">Total Emails</div>
+                </div>
+                <div class="stat-card valid">
+                    <i class="fas fa-check-circle fa-2x"></i>
+                    <div class="stat-number">${stats.validEmails || 0}</div>
+                    <div class="stat-label">Emails Valides</div>
+                    ${stats.validPercentage ? `<div style="font-size: 0.8rem; color: var(--text-light); margin-top: 5px;">${stats.validPercentage}</div>` : ''}
+                </div>
+                <div class="stat-card obsolete">
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    <div class="stat-number">${stats.obsoleteEmails || 0}</div>
+                    <div class="stat-label">Emails Obsolètes</div>
+                    ${stats.obsoletePercentage ? `<div style="font-size: 0.8rem; color: var(--text-light); margin-top: 5px;">${stats.obsoletePercentage}</div>` : ''}
+                </div>
+                <div class="stat-card invalid">
+                    <i class="fas fa-times-circle fa-2x"></i>
+                    <div class="stat-number">${stats.invalidEmails || 0}</div>
+                    <div class="stat-label">Emails Invalides</div>
+                    ${stats.invalidPercentage ? `<div style="font-size: 0.8rem; color: var(--text-light); margin-top: 5px;">${stats.invalidPercentage}</div>` : ''}
+                </div>
+            `;
+    }
+
+    // Export des données
+    function exportValidCSV() {
+        if (!analysisResults || !analysisResults.emails) {
+            showAlert('Aucune donnée à exporter', 'error');
             return;
         }
-        const csvContent = "email\n" + cleanedEmails.join("\n");
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "emails_valides.csv";
-        a.click();
-        window.URL.revokeObjectURL(url);
-        showConfirmation("CSV téléchargé avec succès!");
+
+        const validEmails = analysisResults.emails.filter(email => email.status === 'valid');
+
+        if (validEmails.length === 0) {
+            showAlert('Aucun email valide à exporter', 'error');
+            return;
+        }
+
+        const csvContent = "email\n" + validEmails.map(email => email.address).join("\n");
+        downloadFile(csvContent, 'emails_valides.csv', 'text/csv');
+        showAlert(`${validEmails.length} emails valides exportés en CSV`, 'success');
     }
 
-    function downloadCleanedPDF() {
+    function exportValidPDF() {
+        if (!analysisResults || !analysisResults.emails) {
+            showAlert('Aucune donnée à exporter', 'error');
+            return;
+        }
+
+        const validEmails = analysisResults.emails.filter(email => email.status === 'valid');
+
+        if (validEmails.length === 0) {
+            showAlert('Aucun email valide à exporter', 'error');
+            return;
+        }
+
+        // Utilisation de jsPDF pour générer un PDF
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        const cleanedEmails = emails.filter(e => e.status === "valide").map(e => e.address);
-        if (cleanedEmails.length === 0) {
-            showResult("Aucun email valide à télécharger", "invalid");
-            return;
-        }
-        doc.text("Liste des Emails Valides", 10, 10);
-        let yPosition = 20;
-        cleanedEmails.forEach((email, index) => {
-            if (yPosition > 270) {
+
+        doc.setFontSize(16);
+        doc.text('Liste des Emails Valides', 20, 20);
+        doc.setFontSize(10);
+        doc.text(`Généré le: ${new Date().toLocaleDateString('fr-FR')}`, 20, 30);
+
+        let yPosition = 40;
+        validEmails.forEach((email, index) => {
+            if (yPosition > 270) { // Nouvelle page si nécessaire
                 doc.addPage();
                 yPosition = 20;
             }
-            doc.text(email, 10, yPosition);
-            yPosition += 10;
+            doc.text(`${index + 1}. ${email.address}`, 20, yPosition);
+            yPosition += 7;
         });
-        doc.save("emails_valides.pdf");
-        showConfirmation("PDF téléchargé avec succès!");
+
+        doc.text(`Total: ${validEmails.length} emails valides`, 20, yPosition + 10);
+
+        doc.save('emails_valides.pdf');
+        showAlert(`${validEmails.length} emails valides exportés en PDF`, 'success');
     }
 
-    function showConfirmation(message) {
-        const confirmDiv = document.getElementById("confirmation");
-        confirmDiv.innerText = message;
-        confirmDiv.style.display = "block";
-        setTimeout(() => confirmDiv.style.display = "none", 2000);
+    // Utilitaires
+    function downloadFile(content, filename, contentType) {
+        const blob = new Blob([content], { type: contentType });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
     }
 
-    // Initialisation au chargement de la page
-    window.onload = function() {
-        updateTable();
-        updateStats();
-    };
+    function clearAddForm() {
+        document.getElementById('newEmailAddress').value = '';
+        document.getElementById('newEmailStatus').value = 'valid';
+        document.getElementById('newEmailActive').checked = false;
+    }
+
+    function showAlert(message, type) {
+        const alertContainer = document.getElementById('alertContainer');
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type}`;
+        alert.innerHTML = `
+                <i class="fas fa-${getAlertIcon(type)}"></i>
+                ${message}
+                <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+        alertContainer.appendChild(alert);
+
+        setTimeout(() => {
+            if (alert.parentElement) {
+                alert.remove();
+            }
+        }, 5000);
+    }
+
+    function getAlertIcon(type) {
+        const icons = { success: 'check-circle', error: 'exclamation-circle', warning: 'exclamation-triangle' };
+        return icons[type] || 'info-circle';
+    }
+
+    function setLoading(loading) {
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(btn => {
+            btn.disabled = loading;
+        });
+    }
+
+    async function logout() {
+        if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+            try {
+                await fetch(API_BASE + '/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            } finally {
+                window.location.href = '/login.html?logout=true';
+            }
+        }
+    }
+
+    function loadInitialData() {
+        loadEmails();
+        loadStatistics();
+    }
+
+    // Fermer la modal en cliquant à l'extérieur
+    window.onclick = function(event) {
+        const modal = document.getElementById('editModal');
+        if (event.target === modal) {
+            closeEditModal();
+        }
+    }
 </script>
 </body>
 </html>
