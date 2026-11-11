@@ -2,7 +2,7 @@
 
 A Spring Boot web application to import, check and clean lists of email addresses. Users upload a CSV file, the application checks each address, removes duplicates, classifies the addresses and shows statistics. Valid addresses can then be exported.
 
-> Built during my summer internship (August – October 2025).
+> Built during my summer internship at ESPRIT (July – August 2025).
 
 ## Features
 
